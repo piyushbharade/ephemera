@@ -1,0 +1,835 @@
+/* ==========================================================================
+   Ephemera
+   Idea: a secret is a document. It stays redacted (black bars) until it is
+   opened, and the whole interface is built from paper and redaction.
+
+   Palette
+     slate  #E4E8ED  the desk the paper sits on
+     sheet  #F8F9FB  paper
+     ink    #0E1B2C  text and redaction bars
+     stamp  #D0342C  rubber-stamp red: things that stay private, errors
+     seal   #1B6B58  verified green: things that are safe
+   Type
+     Bricolage Grotesque for everything people read,
+     JetBrains Mono only for real data (the secret, the link, scrambled text).
+   ========================================================================== */
+
+:root {
+  --slate: #e4e8ed;
+  --sheet: #f8f9fb;
+  --ink: #0e1b2c;
+  --ink-2: #44546a;
+  --rule: #b7c0cc;
+  --rule-soft: #dde2e9;
+  --stamp: #d0342c;
+  --seal: #1b6b58;
+  --focus: #2457ff;
+
+  --sans: 'Bricolage Grotesque Variable', 'Avenir Next', 'Helvetica Neue', system-ui, sans-serif;
+  --mono: 'JetBrains Mono Variable', 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  --ease: cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--slate);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+p,
+dl,
+dd,
+ul {
+  margin: 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--sheet);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 12px;
+  z-index: 10;
+  padding: 10px 14px;
+  background: var(--ink);
+  color: var(--sheet);
+}
+.skip:focus {
+  left: 16px;
+}
+
+/* ------------------------------------------------------------------ page frame */
+
+.masthead {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 28px 28px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 1.3rem;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}
+
+.masthead-note {
+  color: var(--ink-2);
+  font-size: 0.95rem;
+}
+
+.stage {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 28px 72px;
+}
+
+.home {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: clamp(36px, 6vw, 96px);
+  align-items: start;
+}
+
+.center {
+  max-width: 720px;
+  margin: 8px auto 0;
+}
+
+.foot {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 28px 44px;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+}
+
+/* --------------------------------------------------------------- intro (left) */
+
+.display {
+  font-size: clamp(2.6rem, 1.2rem + 4.6vw, 4.6rem);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  max-width: 11ch;
+}
+
+.lead {
+  margin-top: 28px;
+  max-width: 34rem;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.lead-sm {
+  margin: 14px 0 22px;
+  max-width: 40rem;
+  color: var(--ink-2);
+}
+
+/* The bars before each heading are the page's one recurring detail: a redacted line. */
+.promises {
+  margin-top: 44px;
+  max-width: 34rem;
+  display: grid;
+  gap: 26px;
+}
+.promises dt {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.promises dt::before {
+  content: '';
+  width: 34px;
+  height: 9px;
+  background: var(--ink);
+}
+.promises > div:nth-child(2) dt::before {
+  width: 22px;
+}
+.promises > div:nth-child(3) dt::before {
+  width: 28px;
+}
+.promises dd {
+  margin-top: 6px;
+  padding-left: 48px;
+  color: var(--ink-2);
+}
+
+.limits {
+  margin-top: 40px;
+  max-width: 34rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 18px;
+  font-size: 0.97rem;
+}
+.limits summary {
+  cursor: pointer;
+  font-weight: 650;
+  width: fit-content;
+}
+.limits ul {
+  margin-top: 14px;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 10px;
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------------------- the sheet */
+
+/* Paper, stacked: the layered edges below are sheets underneath the top one. */
+.sheet {
+  position: relative;
+  margin-bottom: 24px;
+  padding: 34px 38px 38px;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  box-shadow:
+    0 8px 0 -3px var(--sheet),
+    0 8px 0 -2px var(--rule),
+    0 16px 0 -6px var(--sheet),
+    0 16px 0 -5px var(--rule);
+}
+
+.sheet-title {
+  font-size: 1.65rem;
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  margin-bottom: 22px;
+}
+.sheet-title + .lead-sm {
+  margin-top: -8px;
+}
+
+.field {
+  margin: 0 0 24px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.field > label:not(.check),
+.field > legend,
+legend {
+  display: block;
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 0.97rem;
+  font-weight: 650;
+}
+
+.field-foot {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+.field-foot.over {
+  color: var(--stamp);
+  font-weight: 600;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 22px;
+}
+
+.error {
+  margin: 0 0 20px;
+  color: var(--stamp);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+/* ----------------------------------------------------------- paper and redaction */
+
+.paper {
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  line-height: 28px;
+  background-color: #fff;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 27px, var(--rule-soft) 27px 28px);
+  background-attachment: local;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+}
+
+.paper-input {
+  display: block;
+  width: 100%;
+  min-height: 252px;
+  padding: 0 14px;
+  resize: vertical;
+  color: var(--ink);
+}
+.paper-input::placeholder {
+  color: #7b8798;
+}
+.paper-input:disabled {
+  opacity: 0.7;
+}
+
+.paper-view {
+  min-height: 168px;
+  padding: 0 14px;
+  overflow-wrap: anywhere;
+}
+
+.paper-view + .field {
+  margin-top: 24px;
+}
+
+.paper-view.tall {
+  min-height: 252px;
+}
+
+.redact {
+  display: block;
+}
+
+.rl {
+  position: relative;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-height: 28px;
+}
+
+/* The redaction bar itself. */
+.rl::after {
+  content: '';
+  position: absolute;
+  inset: 4px -3px 4px -3px;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+}
+.rl.empty::after {
+  display: none;
+}
+
+/* Sealing: bars sweep across the text. */
+.mode-cover .rl::after {
+  animation: cover 0.55s var(--ease) var(--d, 0ms) both;
+}
+/* Opening: bars slide away to the right and the text appears. */
+.mode-uncover .rl::after {
+  transform: scaleX(1);
+  transform-origin: right center;
+  animation: uncover 0.7s var(--ease) var(--d, 0ms) both;
+}
+/* Not unlocked yet: bars stay put. */
+.mode-covered .rl::after {
+  transform: scaleX(1);
+}
+
+@keyframes cover {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes uncover {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* --------------------------------------------------------------------- controls */
+
+.seg {
+  display: flex;
+}
+.seg-item {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.seg-item + .seg-item {
+  margin-left: -1px;
+}
+.seg-item input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.seg-item span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 8px;
+  border: 1px solid var(--ink);
+  font-size: 0.95rem;
+  font-weight: 560;
+  white-space: nowrap;
+  background: transparent;
+}
+.seg-item:hover input:not(:checked) + span {
+  background: rgba(14, 27, 44, 0.07);
+}
+.seg-item input:checked + span {
+  background: var(--ink);
+  color: var(--sheet);
+  font-weight: 650;
+}
+.seg-item input:focus-visible + span {
+  position: relative;
+  z-index: 1;
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 560;
+}
+.check input {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  flex: none;
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  background: #fff;
+  cursor: pointer;
+}
+.check input::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  background: var(--ink);
+  transform: scale(0);
+  transition: transform 0.12s ease-out;
+}
+.check input:checked::before {
+  transform: scale(1);
+}
+
+.pw {
+  margin-top: 14px;
+}
+.pw-input {
+  display: flex;
+  gap: 10px;
+}
+.pw-input input {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 14px;
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  background: #fff;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 26px;
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  font-weight: 650;
+  font-size: 1.02rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.12s ease-out;
+}
+.btn.primary {
+  background: var(--ink);
+  color: var(--sheet);
+}
+.btn.primary:hover:not(:disabled) {
+  background: #1d3354;
+}
+.btn.quiet {
+  background: transparent;
+  color: var(--ink);
+}
+.btn.quiet:hover:not(:disabled) {
+  background: rgba(14, 27, 44, 0.08);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.btn.wide {
+  width: 100%;
+}
+.btn.small {
+  min-height: 46px;
+  padding: 0 16px;
+  font-size: 0.95rem;
+}
+
+/* ----------------------------------------------------------------- result sheet */
+
+.linkbox {
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: 0.86rem;
+  line-height: 1.7;
+  word-break: break-all;
+}
+.linkbox code {
+  font-family: inherit;
+}
+.lk-hash {
+  background: rgba(208, 52, 44, 0.12);
+  box-shadow: inset 0 -2px 0 var(--stamp);
+}
+
+.hood {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--rule);
+}
+.hood-title {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  font-size: 1.02rem;
+  font-weight: 700;
+  border-bottom: 3px solid var(--ink);
+}
+.hood-title.you {
+  border-bottom-color: var(--stamp);
+}
+.hood dt {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.hood dd {
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  word-break: break-all;
+}
+.hood .muted {
+  color: var(--ink-2);
+}
+.hood .you + dl dd,
+.hood section:last-child dd {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  word-break: normal;
+}
+.verify {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--rule);
+}
+.verify p {
+  font-size: 0.93rem;
+  color: var(--ink-2);
+}
+.cmd {
+  display: block;
+  margin: 10px 0 14px;
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-left: 6px solid var(--ink);
+  word-break: break-all;
+}
+
+/* -------------------------------------------------------------- opened secret */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -8px 0 18px;
+  font-weight: 600;
+  color: var(--seal);
+}
+.dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--seal);
+}
+
+.timer {
+  height: 3px;
+  margin-top: 18px;
+  background: var(--rule-soft);
+}
+.timer span {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transform-origin: left center;
+  transition: transform 1s linear;
+}
+
+/* --------------------------------------------------------------- shredded page */
+
+.shred {
+  position: relative;
+  height: 190px;
+  margin-bottom: 26px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* Every strip is a full copy of the page, clipped to its own vertical slice. */
+.strip {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 calc(100% - (var(--i) + 1) * 100% / var(--n)) 0 calc(var(--i) * 100% / var(--n)));
+  animation: fall 1.15s cubic-bezier(0.55, 0.05, 0.9, 0.45) calc(0.8s + var(--i) * 45ms) forwards;
+}
+.strip::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--i) * 100% / var(--n));
+  border-left: 1px dashed var(--rule);
+}
+.doc {
+  display: block;
+  height: 100%;
+  padding: 6px 14px 0;
+  background-color: #fff;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 27px, var(--rule-soft) 27px 28px);
+}
+.doc i {
+  display: block;
+  height: 16px;
+  margin-bottom: 12px;
+  background: var(--ink);
+}
+
+@keyframes fall {
+  0% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1;
+  }
+  15% {
+    transform: translate(0, 6px) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--x), 230px) rotate(var(--r));
+    opacity: 0;
+  }
+}
+
+.stamp {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 0.2em 0.7em;
+  border: 4px solid var(--stamp);
+  border-radius: 3px;
+  color: var(--stamp);
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(-7deg) scale(1.7);
+  animation: thump 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) 2.15s forwards;
+}
+@keyframes thump {
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-7deg) scale(1);
+  }
+}
+
+/* ------------------------------------------------------------------- responsive */
+
+@media (max-width: 900px) {
+  /* One column. The form comes right after the headline, and the explanations follow it. */
+  .home {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .intro {
+    display: contents;
+  }
+  .display {
+    order: 1;
+    max-width: 14ch;
+  }
+  .lead {
+    order: 2;
+  }
+  .home > .sheet {
+    order: 3;
+    margin-top: 36px;
+  }
+  .promises {
+    order: 4;
+  }
+  .limits {
+    order: 5;
+  }
+}
+
+@media (max-width: 640px) {
+  .masthead {
+    padding: 20px 18px 24px;
+  }
+  .masthead-note {
+    display: none;
+  }
+  .stage {
+    padding: 0 18px 56px;
+  }
+  .foot {
+    padding: 0 18px 36px;
+  }
+  .sheet {
+    padding: 24px 20px 28px;
+  }
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .hood {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .promises dd {
+    padding-left: 0;
+  }
+  .stamp {
+    font-size: 1.5rem;
+  }
+  .actions .btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* People who ask their device for less motion get the end state, immediately. */
+@media (prefers-reduced-motion: reduce) {
+  .mode-cover .rl::after,
+  .mode-uncover .rl::after {
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
+  }
+  .strip {
+    display: none;
+  }
+  .stamp {
+    animation: none;
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-7deg);
+  }
+  .timer span,
+  .check input::before,
+  .btn {
+    transition: none;
+  }
+}
+
+.assure {
+  margin-top: 14px;
+  text-align: center;
+}
